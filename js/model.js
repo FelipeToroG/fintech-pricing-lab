@@ -79,28 +79,23 @@ export function rivalPrices(providers, assumptions, scenario) {
     { id: "stripe", name: "Stripe", price: flat(inPerson ? "stripe_inperson" : "stripe_online"), basis: inPerson ? "2.7% + 5¢ in person" : "2.9% + 30¢ online" },
     { id: "square", name: "Square", price: flat(inPerson ? "square_free_inperson" : "square_free_online"), basis: inPerson ? "2.6% + 15¢ in person (Free plan)" : "3.3% + 30¢ online (Free plan)" },
     { id: "paypal", name: "PayPal", price: flat(inPerson ? "paypal_zettle_inperson" : "paypal_card_online"), basis: inPerson ? "2.29% + 9¢ (Zettle reader)" : "2.99% + 49¢ card payments" },
-    { id: "adyen", name: "Adyen", price: adyenFixed.fixed_usd + ic + network + ticket * pct(adyenMarkup.rate_pct), basis: "$0.13 + interchange + 0.60%" },
+    { id: "adyen", name: "Adyen", price: adyenFixed.fixed_usd + ic + network + ticket * pct(adyenMarkup.rate_pct), basis: "$0.13 + interchange + network fee + 0.60%" },
   ].map((r) => ({ ...r, effectiveRate: (r.price / ticket) * 100 }));
 }
 
-// Recommended-plan finder (no machine learning, just a transparent rule):
-//   1. Among plans that are cheaper for the merchant than the cheapest rival AND still
-//      profitable, pick the one with the highest monthly profit for FairSwipe.
-//   2. If no plan qualifies, recommend the most competitive profitable plan (lowest price
-//      to the merchant), and report that nothing undercuts the market.
-// Gotcha: falling back to "most profitable" in case 2 would recommend a $299/month plan to a
-// coffee shop. When FairSwipe cannot win on price, the honest pick is the plan that comes closest.
+// Recommended-plan finder (no machine learning, just a transparent rule).
+// It answers the merchant's question, because the merchant is the one choosing:
+//   1. Keep only plans that are profitable for FairSwipe (a plan that loses money is not offered).
+//   2. Pick the one that is cheapest for the merchant. Given a menu, that is the plan they would choose.
+//   3. Report whether that plan also undercuts the cheapest competitor.
+// Gotcha: ranking by FairSwipe's profit instead would recommend a pricier plan to a merchant
+// who qualifies for a cheaper one, which no real merchant would accept.
 export function recommend(results, rivals) {
   const cheapest = rivals.reduce((a, b) => (b.price < a.price ? b : a));
-  const eligible = results.filter((r) => r.price < cheapest.price && r.margin > 0);
-  if (eligible.length) {
-    const best = eligible.reduce((a, b) => (b.monthlyProfit > a.monthlyProfit ? b : a));
-    return { best, cheapest, undercuts: true };
-  }
   const profitable = results.filter((r) => r.margin > 0);
   const pool = profitable.length ? profitable : results;
   const best = pool.reduce((a, b) => (b.price < a.price ? b : a));
-  return { best, cheapest, undercuts: false };
+  return { best, cheapest, undercuts: best.price < cheapest.price && best.margin > 0 };
 }
 
 // Volume curve for the line chart (decision 3C).

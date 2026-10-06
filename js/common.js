@@ -168,6 +168,27 @@ export const savePlans = (plans) => writeSession(KEYS.plans, JSON.stringify(plan
 export const resetPlans = () => removeSession(KEYS.plans);
 export const plansEdited = () => readSession(KEYS.plans) !== null;
 
+// The one sample sale shown on Home and Manage plans. It is a merchant profile (named by
+// startup.json -> reference_merchant_id), so it always matches that profile on Analytics.
+export function referenceSale(startup) {
+  const m = startup.merchants.find((x) => x.id === startup.reference_merchant_id);
+  if (!m) throw new Error(`startup.json reference_merchant_id "${startup.reference_merchant_id}" matches no merchant`);
+  return { ticket: m.avg_ticket_usd, channel: m.channel, debitShare: m.debit_share_pct, volume: m.monthly_volume_usd };
+}
+export const channelName = (c) => (c === "in_person" ? "in-person" : "online");
+
+// Fills every [data-ref] span in the page copy from the reference sale, so labels like
+// "$80 online sale" can never disagree with the numbers next to them.
+export function fillReferenceText(ref) {
+  const text = {
+    ticket: fmt.usd(ref.ticket, 0),
+    channel: channelName(ref.channel),
+    mix: `${100 - ref.debitShare}% credit, ${ref.debitShare}% debit`,
+    volume: fmt.compact(ref.volume),
+  };
+  document.querySelectorAll("[data-ref]").forEach((el) => { el.textContent = text[el.dataset.ref] ?? el.textContent; });
+}
+
 // Shows a readable message if data fails to load (most often: opened via file://)
 export function showLoadError(container, err) {
   console.error(err);

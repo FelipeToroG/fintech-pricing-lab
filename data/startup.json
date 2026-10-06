@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "company": "FairSwipe",
   "description": "Scenario inputs for the fictional startup FairSwipe. These are pricing decisions and assumptions, not published facts. Every value here is editable on the site.",
   "assumptions": {
@@ -20,17 +20,7 @@
       "rate_pct": 2.75,
       "fixed_usd": 0.15,
       "monthly_fee_usd": 0,
-      "target": "New sellers, in person or online",
-      "featured": false
-    },
-    {
-      "id": "micro",
-      "name": "Micro-ticket",
-      "type": "flat",
-      "rate_pct": 3.5,
-      "fixed_usd": 0.05,
-      "monthly_fee_usd": 0,
-      "target": "Coffee shops and sales under $10",
+      "target": "New online sellers",
       "featured": false
     },
     {
@@ -38,9 +28,9 @@
       "name": "Growth",
       "type": "ic_plus",
       "rate_pct": 0.5,
-      "fixed_usd": 0.10,
+      "fixed_usd": 0.1,
       "monthly_fee_usd": 49,
-      "target": "$25K to $250K in monthly sales",
+      "target": "Online sellers up to about $75K a month",
       "featured": true
     },
     {
@@ -50,7 +40,7 @@
       "rate_pct": 0.2,
       "fixed_usd": 0.05,
       "monthly_fee_usd": 299,
-      "target": "$250K or more in monthly sales",
+      "target": "About $75K or more a month",
       "featured": false
     }
   ],
@@ -68,7 +58,7 @@
       "name": "Online store",
       "channel": "online",
       "avg_ticket_usd": 80,
-      "monthly_volume_usd": 150000,
+      "monthly_volume_usd": 50000,
       "debit_share_pct": 40
     },
     {
@@ -79,5 +69,6 @@
       "monthly_volume_usd": 500000,
       "debit_share_pct": 10
     }
-  ]
+  ],
+  "reference_merchant_id": "online"
 }

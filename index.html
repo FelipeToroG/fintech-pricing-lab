@@ -47,8 +47,8 @@
   <!-- Stat strip: every figure is computed from data/providers.json by js/home.js -->
   <section class="block reveal" aria-label="Key figures">
     <div class="wrap stats" id="stats">
-      <div class="stat"><b data-stat="passthrough">&nbsp;</b><span class="muted">of a typical Stripe online fee goes to the card's bank and network, not to Stripe</span></div>
-      <div class="stat"><b data-stat="saving">&nbsp;</b><span class="muted">saved per $80 online sale on FairSwipe Growth versus Stripe's standard rate</span></div>
+      <div class="stat"><b data-stat="passthrough">&nbsp;</b><span class="muted">of a Stripe <span data-ref="channel">online</span> fee goes to the card's bank and network, not to Stripe (<span data-ref="mix">60% credit, 40% debit</span> card mix)</span></div>
+      <div class="stat"><b data-stat="saving">&nbsp;</b><span class="muted">saved per <span data-ref="ticket">$80</span> <span data-ref="channel">online</span> sale on FairSwipe <span id="savingPlan">Growth</span> versus Stripe's standard rate</span></div>
       <div class="stat"><b data-stat="rivals">4</b><span class="muted">processors benchmarked from their published US pricing pages</span></div>
     </div>
   </section>
@@ -58,14 +58,14 @@
     <div class="wrap split">
       <div>
         <div class="label">Where your fee goes</div>
-        <h2 id="receiptTitle">One $80 sale, line by line</h2>
+        <h2 id="receiptTitle">One <span data-ref="ticket">$80</span> sale, line by line</h2>
         <p>Most of a card fee never reaches the processor. The largest share is <strong>interchange</strong>, set by Visa and Mastercard and paid to the customer's bank. A smaller network fee goes to the card brand. What is left is the processor's margin.</p>
         <p class="muted">FairSwipe prints this breakdown for every plan, so merchants see exactly what they are paying for.</p>
         <a class="btn btn-solid" href="analytics.html" style="margin-top:8px">Test your own numbers</a>
       </div>
       <div class="receipt" id="receipt" aria-live="polite">
         <div class="r-head">FairSwipe</div>
-        <div class="r-sub">ONLINE SALE &middot; VISA CREDIT &middot; GROWTH PLAN</div>
+        <div class="r-sub">ONLINE SALE &middot; 60% CREDIT / 40% DEBIT &middot; GROWTH PLAN</div>
         <div id="receiptRows"></div>
       </div>
     </div>

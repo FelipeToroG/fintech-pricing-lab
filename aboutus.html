@@ -97,7 +97,7 @@
         <h2 id="buildTitle">Data first, then design</h2>
         <p>I started with the data, not the pages. Published fees from Stripe, Square, PayPal and Adyen, plus Visa's interchange schedule, went into one normalized JSON file with a source link and capture date on every number. FairSwipe's own plans and cost assumptions live in a separate file, so invented scenario values can never be confused with cited facts.</p>
         <p>One pricing module turns that data into every number on the site: the receipt on the home page, the plan table, the KPI tiles and both charts. Changing a plan or a slider recalculates everything from the same functions.</p>
-        <p>The hardest part was honesty in the model. On small in-person sales, card costs alone come close to what Stripe charges, so no FairSwipe plan undercuts it there. The analytics page says so instead of hiding it.</p>
+        <p>The hardest part was honesty in the model. On small in-person sales, card costs plus FairSwipe's own processing cost come to more than Stripe charges, so no FairSwipe plan undercuts it there. The analytics page says so instead of hiding it.</p>
       </div>
       <div class="card">
         <div class="label">Technologies</div>

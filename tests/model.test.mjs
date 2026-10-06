@@ -9,6 +9,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { interchange, planEconomics, rivalPrices, recommend, volumeCurve, VOLUME_STEPS } from "../js/model.js";
+import { referenceSale } from "../js/common.js";
 
 const load = (f) => JSON.parse(readFileSync(new URL(`../data/${f}`, import.meta.url)));
 const providers = load("providers.json");
@@ -17,7 +18,7 @@ const A = startup.assumptions;
 const plan = (id) => startup.plans.find((p) => p.id === id);
 const close = (actual, expected, msg) => assert.ok(Math.abs(actual - expected) < 1e-6, `${msg}: got ${actual}, expected ${expected}`);
 
-const ONLINE = { ticket: 80, channel: "online", debitShare: 40, volume: 150000 };
+const ONLINE = { ticket: 80, channel: "online", debitShare: 40, volume: 50000 };   // the Online store profile
 const COFFEE = { ticket: 8, channel: "in_person", debitShare: 60, volume: 20000 };
 
 test("blended interchange matches the Visa schedule by hand", () => {
@@ -34,10 +35,10 @@ test("small debit sales cost more than credit (Durbin fixed fee effect)", () => 
 
 test("interchange-plus plan price and margin", () => {
   const e = planEconomics(providers, A, plan("growth"), ONLINE);
-  // price = interchange 1.0712 + network 0.104 + markup 0.50 + 49 / 1875 sales
-  close(e.price, 1.0712 + 0.104 + 0.5 + 49 / 1875, "growth price");
-  close(e.margin, 0.5 + 49 / 1875 - 0.04, "growth margin = markup + fee share - processing cost");
-  close(e.monthlyProfit, e.margin * 1875, "monthly profit");
+  // price = interchange 1.0712 + network 0.104 + markup 0.50 + 49 / 625 sales
+  close(e.price, 1.0712 + 0.104 + 0.5 + 49 / 625, "growth price");
+  close(e.margin, 0.5 + 49 / 625 - 0.04, "growth margin = markup + fee share - processing cost");
+  close(e.monthlyProfit, e.margin * 625, "monthly profit");
 });
 
 test("flat plan ignores interchange in its price", () => {
@@ -53,22 +54,45 @@ test("competitor prices follow published rates", () => {
   close(r.adyen, 0.13 + 1.0712 + 0.104 + 0.48, "Adyen 0.13 + IC + network + 0.60%");
 });
 
-test("finder picks the most profitable plan that undercuts the cheapest rival", () => {
-  const results = startup.plans.map((p) => planEconomics(providers, A, p, ONLINE));
-  const { best, cheapest, undercuts } = recommend(results, rivalPrices(providers, A, ONLINE));
+test("finder picks the plan the merchant would choose: the cheapest profitable one", () => {
+  const ref = referenceSale(startup);   // $80 online, 40% debit, $50K a month
+  const results = startup.plans.map((p) => planEconomics(providers, A, p, ref));
+  const { best, cheapest, undercuts } = recommend(results, rivalPrices(providers, A, ref));
   assert.equal(cheapest.id, "adyen");
-  assert.equal(undercuts, true);
   assert.equal(best.plan.id, "growth");
+  assert.equal(undercuts, true);
+});
+
+test("large merchants are steered to Scale, matching its plan description", () => {
+  const b2b = startup.merchants.find((m) => m.id === "b2b");
+  const s = { ticket: b2b.avg_ticket_usd, channel: b2b.channel, debitShare: b2b.debit_share_pct, volume: b2b.monthly_volume_usd };
+  const results = startup.plans.map((p) => planEconomics(providers, A, p, s));
+  assert.equal(recommend(results, rivalPrices(providers, A, s)).best.plan.id, "scale");
 });
 
 test("finder admits when no plan can beat the market", () => {
-  // Coffee shop: card costs alone (about $0.27) exceed Stripe's in-person price ($0.266)
+  // Coffee shop: card costs ($0.231) plus FairSwipe's 4-cent processing cost exceed Stripe's in-person price ($0.266)
   const results = startup.plans.map((p) => planEconomics(providers, A, p, COFFEE));
   const { undercuts, cheapest, best } = recommend(results, rivalPrices(providers, A, COFFEE));
   assert.equal(undercuts, false);
   assert.equal(cheapest.id, "stripe");
-  // Falls back to the most competitive profitable plan, not the most profitable one
-  assert.equal(best.plan.id, "micro");
+  const cheapestProfitable = results.filter((r) => r.margin > 0).reduce((a, b) => (b.price < a.price ? b : a));
+  assert.equal(best.plan.id, cheapestProfitable.plan.id);
+});
+
+test("the reference sale is the Online store profile", () => {
+  assert.deepEqual(referenceSale(startup), ONLINE);
+});
+
+test("finder says when a better-priced plan could still win", () => {
+  // Online store at $10K: Growth's $49 fee lifts its price above Adyen, but FairSwipe's
+  // cost floor is well below Adyen, so the page must not claim winning is impossible.
+  const s = { ...ONLINE, volume: 10000 };
+  const results = startup.plans.map((p) => planEconomics(providers, A, p, s));
+  const { undercuts, cheapest } = recommend(results, rivalPrices(providers, A, s));
+  const floor = results[0].ic + results[0].network + results[0].cost;
+  assert.equal(undercuts, false);
+  assert.ok(floor < cheapest.price, "cost floor sits below the cheapest rival");
 });
 
 test("subscription plans are expensive for small merchants and cheapest for large ones", () => {

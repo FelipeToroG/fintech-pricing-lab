@@ -62,7 +62,7 @@ JSON cannot carry comments, so this file is the field reference.
 
 - Regulated debit rates apply to large issuing banks only. Debit cards from smaller banks carry higher interchange.
 
-# startup.json (v1.0.0)
+# startup.json (v1.1.0)
 
 | Field | Meaning |
 |---|---|
@@ -71,6 +71,7 @@ JSON cannot carry comments, so this file is the field reference.
 | `assumptions.debit_fraud_adjustment_usd` | Added to regulated debit interchange (from the Visa schedule) |
 | `plans[]` | `id`, `name`, `type` (`flat` or `ic_plus`), `rate_pct`, `fixed_usd`, `monthly_fee_usd`, `target`, `featured` |
 | `merchants[]` | `id`, `name`, `channel` (`in_person` or `online`), `avg_ticket_usd`, `monthly_volume_usd`, `debit_share_pct` |
+| `reference_merchant_id` | `merchants[].id` of the sample sale shown on Home and Manage plans (added in v1.1.0). Page copy such as "$80 online sale" is filled from this profile |
 
 ## Pricing model (js/model.js)
 

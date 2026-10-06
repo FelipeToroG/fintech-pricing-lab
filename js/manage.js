@@ -7,13 +7,14 @@
 // Changes are written to sessionStorage (decision 5B), so they reach the Home and
 // Analytics pages in the same tab and vanish when the tab closes. Nothing leaves the browser.
 // =====================================================================
-import { boot, loadData, getPlans, savePlans, resetPlans, plansEdited, fmt, planPriceText, toast, showLoadError } from "./common.js";
+import { boot, loadData, getPlans, savePlans, resetPlans, plansEdited, fmt, planPriceText, toast, showLoadError, referenceSale, channelName, fillReferenceText } from "./common.js";
 import { planEconomics } from "./model.js";
 
 boot();
 
-// Sample sale used for the "On $80" and "FairSwipe keeps" columns. Stated in the hint under the table.
-const SAMPLE = { ticket: 80, channel: "online", debitShare: 40, volume: 150000 };
+// Sample sale for the "On $80" and "FairSwipe keeps" columns: the merchant profile named in
+// startup.json, so it is identical to the Home page receipt and that profile on Analytics.
+let SAMPLE;
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -117,7 +118,7 @@ function preview() {
   const errs = validate();
   if (errs.Rate || errs.Fixed || errs.Monthly) { $("fPreview").textContent = ""; return; }
   const e = planEconomics(providers, startup.assumptions, draft, SAMPLE);
-  $("fPreview").innerHTML = `On a sample $80 online sale this plan charges <strong>${fmt.usd(e.price)}</strong> (${fmt.pct(e.effectiveRate)}) and FairSwipe keeps <strong class="${e.margin < 0 ? "neg-text" : ""}">${fmt.usd(e.margin)}</strong>.`;
+  $("fPreview").innerHTML = `On a sample ${fmt.usd(SAMPLE.ticket, 0)} ${channelName(SAMPLE.channel)} sale this plan charges <strong>${fmt.usd(e.price)}</strong> (${fmt.pct(e.effectiveRate)}) and FairSwipe keeps <strong class="${e.margin < 0 ? "neg-text" : ""}">${fmt.usd(e.margin)}</strong>.`;
 }
 
 function readForm() {
@@ -176,13 +177,13 @@ function openView(plan) {
     ["Price", planPriceText(plan)],
     ["Monthly fee", fmt.usd0(plan.monthly_fee_usd)],
     ["Target merchant", plan.target || "Not set"],
-    ["Sample sale", "$80 online, 40% debit"],
+    ["Sample sale", `${fmt.usd(SAMPLE.ticket, 0)} ${channelName(SAMPLE.channel)}, ${SAMPLE.debitShare}% debit`],
     ["Merchant pays", `${fmt.usd(e.price)} (${fmt.pct(e.effectiveRate)})`],
     ["Interchange", fmt.usd(e.ic)],
     ["Network fee", fmt.usd(e.network)],
     ["Processing cost", fmt.usd(e.cost)],
     ["FairSwipe keeps", fmt.usd(e.margin)],
-    ["Monthly profit at $150K", fmt.usd0(e.monthlyProfit)],
+    [`Monthly profit at ${fmt.compact(SAMPLE.volume)}`, fmt.usd0(e.monthlyProfit)],
   ];
   $("viewList").innerHTML = rows.map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join("");
   $("viewEdit").onclick = () => { $("viewDialog").close(); openForm(plan); };
@@ -229,6 +230,8 @@ $("resetBtn").addEventListener("click", () => {
 async function init() {
   try { ({ providers, startup } = await loadData()); }
   catch (err) { showLoadError(document.querySelector(".panel"), err); return; }
+  SAMPLE = referenceSale(startup);
+  fillReferenceText(SAMPLE);
   plans = getPlans(startup);
   render();
 }

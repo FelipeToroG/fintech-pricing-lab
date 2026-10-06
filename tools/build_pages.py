@@ -113,8 +113,8 @@ page("index.html", "FairSwipe | Card acceptance, itemized",
       "main": """  <!-- Stat strip: every figure is computed from data/providers.json by js/home.js -->
   <section class="block reveal" aria-label="Key figures">
     <div class="wrap stats" id="stats">
-      <div class="stat"><b data-stat="passthrough">&nbsp;</b><span class="muted">of a typical Stripe online fee goes to the card's bank and network, not to Stripe</span></div>
-      <div class="stat"><b data-stat="saving">&nbsp;</b><span class="muted">saved per $80 online sale on FairSwipe Growth versus Stripe's standard rate</span></div>
+      <div class="stat"><b data-stat="passthrough">&nbsp;</b><span class="muted">of a Stripe <span data-ref="channel">online</span> fee goes to the card's bank and network, not to Stripe (<span data-ref="mix">60% credit, 40% debit</span> card mix)</span></div>
+      <div class="stat"><b data-stat="saving">&nbsp;</b><span class="muted">saved per <span data-ref="ticket">$80</span> <span data-ref="channel">online</span> sale on FairSwipe <span id="savingPlan">Growth</span> versus Stripe's standard rate</span></div>
       <div class="stat"><b data-stat="rivals">4</b><span class="muted">processors benchmarked from their published US pricing pages</span></div>
     </div>
   </section>
@@ -124,14 +124,14 @@ page("index.html", "FairSwipe | Card acceptance, itemized",
     <div class="wrap split">
       <div>
         <div class="label">Where your fee goes</div>
-        <h2 id="receiptTitle">One $80 sale, line by line</h2>
+        <h2 id="receiptTitle">One <span data-ref="ticket">$80</span> sale, line by line</h2>
         <p>Most of a card fee never reaches the processor. The largest share is <strong>interchange</strong>, set by Visa and Mastercard and paid to the customer's bank. A smaller network fee goes to the card brand. What is left is the processor's margin.</p>
         <p class="muted">FairSwipe prints this breakdown for every plan, so merchants see exactly what they are paying for.</p>
         <a class="btn btn-solid" href="analytics.html" style="margin-top:8px">Test your own numbers</a>
       </div>
       <div class="receipt" id="receipt" aria-live="polite">
         <div class="r-head">FairSwipe</div>
-        <div class="r-sub">ONLINE SALE &middot; VISA CREDIT &middot; GROWTH PLAN</div>
+        <div class="r-sub">ONLINE SALE &middot; 60% CREDIT / 40% DEBIT &middot; GROWTH PLAN</div>
         <div id="receiptRows"></div>
       </div>
     </div>
@@ -177,7 +177,7 @@ page("manageplans.html", "FairSwipe | Manage plans",
     <div class="label">Plan ledger</div>
     <h1>Manage plans</h1>
     <div class="ornament"><span></span></div>
-    <p>Add, view, edit and retire FairSwipe pricing plans. Each row shows what the plan would charge on a sample $80 online sale and what FairSwipe keeps.</p>
+    <p>Add, view, edit and retire FairSwipe pricing plans. Each row shows what the plan would charge on a sample <span data-ref="ticket">$80</span> <span data-ref="channel">online</span> sale and what FairSwipe keeps.</p>
   </div>
 """,
       "main": """  <section class="block" style="padding-top:40px">
@@ -213,7 +213,7 @@ page("manageplans.html", "FairSwipe | Manage plans",
                 <th scope="col" class="r">Price</th>
                 <th scope="col" class="r hide-sm">Monthly</th>
                 <th scope="col" class="hide-sm">Target</th>
-                <th scope="col" class="r">On $80</th>
+                <th scope="col" class="r">On <span data-ref="ticket">$80</span></th>
                 <th scope="col" class="r">FairSwipe keeps</th>
                 <th scope="col" class="r"><span class="sr-only">Actions</span></th>
               </tr>
@@ -223,7 +223,7 @@ page("manageplans.html", "FairSwipe | Manage plans",
         </div>
         <p class="hint" id="emptyState" hidden style="padding:18px 12px">No plans match that search. Clear the search or add a plan.</p>
       </div>
-      <p class="hint" style="margin-top:12px">"On $80" is the merchant's price for one $80 online sale (60% credit, 40% debit, $150K monthly volume). "FairSwipe keeps" is that price minus interchange, network fee and processing cost.</p>
+      <p class="hint" style="margin-top:12px">"On <span data-ref="ticket">$80</span>" is the merchant's price for one <span data-ref="ticket">$80</span> <span data-ref="channel">online</span> sale (<span data-ref="mix">60% credit, 40% debit</span>, <span data-ref="volume">$50K</span> monthly volume). "FairSwipe keeps" is that price minus interchange, network fee and processing cost.</p>
     </div>
   </section>
 
@@ -347,10 +347,10 @@ page("analytics.html", "FairSwipe | Analytics",
 
       <div>
         <div class="kpis" aria-live="polite">
-          <div class="kpi"><div class="label">Recommended plan</div><b id="kPlan">&nbsp;</b><small id="kPlanSub"></small></div>
+          <div class="kpi"><div class="label">Best plan for this merchant</div><b id="kPlan">&nbsp;</b><small id="kPlanSub"></small></div>
           <div class="kpi"><div class="label">FairSwipe monthly profit</div><b id="kProfit" class="pos">&nbsp;</b><small id="kProfitSub"></small></div>
           <div class="kpi"><div class="label">Margin on each sale</div><b id="kMargin" class="pos">&nbsp;</b><small id="kMarginSub"></small></div>
-          <div class="kpi"><div class="label">Merchant saves vs Stripe</div><b id="kSave">&nbsp;</b><small>per month</small></div>
+          <div class="kpi"><div class="label" id="kSaveLabel">Merchant saves vs Stripe</div><b id="kSave">&nbsp;</b><small>per month</small></div>
         </div>
         <p class="finder" id="finder" aria-live="polite"></p>
 
@@ -374,7 +374,7 @@ page("analytics.html", "FairSwipe | Analytics",
             <div class="legend-inline" id="curveLegend"></div>
           </div>
           <div class="chart-box"><canvas id="curveChart" role="img" aria-label="Line chart of the merchant effective rate for each FairSwipe plan across monthly sales volumes, with Stripe and the cheapest other competitor as dashed reference lines"></canvas></div>
-          <p class="hint" style="margin:12px 0 0">A monthly fee is spread across every sale, so subscription plans look expensive for small merchants and become the cheapest option as sales grow. Where a solid line drops below a dashed one, that plan beats the competitor. Hover to see what FairSwipe earns at each size.</p>
+          <p class="hint" style="margin:12px 0 0">A monthly fee is spread across every sale, so subscription plans look expensive for small merchants and become the cheapest option as sales grow. At the smallest sizes a subscription plan can run off the top of the chart. Where a solid line drops below a dashed one, that plan beats the competitor. Hover to see what FairSwipe earns at each size.</p>
           <details class="table-view">
             <summary>Show as table</summary>
             <div class="table-wrap"><table id="curveTable"></table></div>
@@ -469,7 +469,7 @@ page("aboutus.html", "FairSwipe | About",
         <h2 id="buildTitle">Data first, then design</h2>
         <p>I started with the data, not the pages. Published fees from Stripe, Square, PayPal and Adyen, plus Visa's interchange schedule, went into one normalized JSON file with a source link and capture date on every number. FairSwipe's own plans and cost assumptions live in a separate file, so invented scenario values can never be confused with cited facts.</p>
         <p>One pricing module turns that data into every number on the site: the receipt on the home page, the plan table, the KPI tiles and both charts. Changing a plan or a slider recalculates everything from the same functions.</p>
-        <p>The hardest part was honesty in the model. On small in-person sales, card costs alone come close to what Stripe charges, so no FairSwipe plan undercuts it there. The analytics page says so instead of hiding it.</p>
+        <p>The hardest part was honesty in the model. On small in-person sales, card costs plus FairSwipe's own processing cost come to more than Stripe charges, so no FairSwipe plan undercuts it there. The analytics page says so instead of hiding it.</p>
       </div>
       <div class="card">
         <div class="label">Technologies</div>

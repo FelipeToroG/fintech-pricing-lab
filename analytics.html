@@ -81,10 +81,10 @@
 
       <div>
         <div class="kpis" aria-live="polite">
-          <div class="kpi"><div class="label">Recommended plan</div><b id="kPlan">&nbsp;</b><small id="kPlanSub"></small></div>
+          <div class="kpi"><div class="label">Best plan for this merchant</div><b id="kPlan">&nbsp;</b><small id="kPlanSub"></small></div>
           <div class="kpi"><div class="label">FairSwipe monthly profit</div><b id="kProfit" class="pos">&nbsp;</b><small id="kProfitSub"></small></div>
           <div class="kpi"><div class="label">Margin on each sale</div><b id="kMargin" class="pos">&nbsp;</b><small id="kMarginSub"></small></div>
-          <div class="kpi"><div class="label">Merchant saves vs Stripe</div><b id="kSave">&nbsp;</b><small>per month</small></div>
+          <div class="kpi"><div class="label" id="kSaveLabel">Merchant saves vs Stripe</div><b id="kSave">&nbsp;</b><small>per month</small></div>
         </div>
         <p class="finder" id="finder" aria-live="polite"></p>
 
@@ -108,7 +108,7 @@
             <div class="legend-inline" id="curveLegend"></div>
           </div>
           <div class="chart-box"><canvas id="curveChart" role="img" aria-label="Line chart of the merchant effective rate for each FairSwipe plan across monthly sales volumes, with Stripe and the cheapest other competitor as dashed reference lines"></canvas></div>
-          <p class="hint" style="margin:12px 0 0">A monthly fee is spread across every sale, so subscription plans look expensive for small merchants and become the cheapest option as sales grow. Where a solid line drops below a dashed one, that plan beats the competitor. Hover to see what FairSwipe earns at each size.</p>
+          <p class="hint" style="margin:12px 0 0">A monthly fee is spread across every sale, so subscription plans look expensive for small merchants and become the cheapest option as sales grow. At the smallest sizes a subscription plan can run off the top of the chart. Where a solid line drops below a dashed one, that plan beats the competitor. Hover to see what FairSwipe earns at each size.</p>
           <details class="table-view">
             <summary>Show as table</summary>
             <div class="table-wrap"><table id="curveTable"></table></div>

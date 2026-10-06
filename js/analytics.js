@@ -64,7 +64,7 @@ function syncOutputs(s, a) {
 
 // ---------- Colors ----------
 // Color follows the plan, never its position: each default plan owns a fixed slot by id,
-// so deleting Micro-ticket does not repaint Growth. Plans added by the visitor have no slot;
+// so deleting Starter does not repaint Growth. Plans added by the visitor have no slot;
 // rather than inventing new hues, they use the neutral tone with a dashed line as the cue.
 let slotById = {};
 const slot = (p) => slotById[p.id];
@@ -83,9 +83,13 @@ const barTotals = {
     ctx.fillStyle = css("--text-muted");
     ctx.textBaseline = "middle";
     chart.data.labels.forEach((_, i) => {
-      const total = chart.data.datasets.reduce((sum, ds) => sum + Math.max(ds.data[i] ?? 0, 0), 0);
-      if (!total) return;
-      ctx.fillText(fmt.usd(total), x.getPixelForValue(total) + 8, y.getPixelForValue(i));
+      // The label is the true price, so a negative margin (a loss) is subtracted, not ignored.
+      // It is drawn past the longest positive segment so it never sits on top of a bar.
+      const values = chart.data.datasets.map((ds) => ds.data[i] ?? 0);
+      const price = values.reduce((sum, v) => sum + v, 0);
+      const barEnd = values.reduce((sum, v) => sum + Math.max(v, 0), 0);
+      if (!barEnd) return;
+      ctx.fillText(fmt.usd(price), x.getPixelForValue(barEnd) + 8, y.getPixelForValue(i));
     });
     ctx.restore();
   },
@@ -170,8 +174,8 @@ function buildBreakdown(results, rivals) {
   opts.plugins.tooltip.callbacks = {
     label: (c) => (c.raw == null ? null : `${c.dataset.label}: ${fmt.usd(c.raw)}`),
     footer: (items) => {
-      const total = items.reduce((s, it) => s + Math.max(it.raw ?? 0, 0), 0);
-      return `Merchant pays: ${fmt.usd(total)}`;
+      const price = items.reduce((s, it) => s + (it.raw ?? 0), 0);   // negative margin reduces the price
+      return `Merchant pays: ${fmt.usd(price)}`;
     },
   };
   opts.plugins.tooltip.mode = "index";
@@ -212,6 +216,15 @@ function curveData(s, a, rivals) {
   return { labels: VOLUME_STEPS.map(fmt.compact), datasets: [...planSets, ...rivalSets] };
 }
 
+// Fits the y-axis to the competitors and to plans at $25K and up, so every rival line is visible.
+// Only a subscription plan at the two smallest volumes may run off the top, which is the point
+// the chart makes (the hint under it says so). Recomputed on every update, because switching
+// from an $80 online sale to an $8 in-person sale moves competitor rates from about 3% to 5%.
+function curveYMax(datasets) {
+  const visibleMax = Math.max(...datasets.flatMap((d) => (d.isRival ? d.data : d.data.slice(2))));
+  return Math.ceil(visibleMax + 0.5);
+}
+
 function buildCurve(s, a, rivals) {
   const opts = baseOptions();
   opts.layout = { padding: { right: 96 } };            // room for the names at line ends
@@ -219,8 +232,10 @@ function buildCurve(s, a, rivals) {
   opts.scales.y.ticks.font = { family: "IBM Plex Mono", size: 11 };
   opts.scales.y.ticks.callback = (v) => fmt.pct(v, 1);
   opts.scales.y.suggestedMin = 0;
-  // Cap the axis so a $299 plan at $5K (rate near 8%) does not flatten every other line
-  opts.scales.y.max = 6;
+  // Fit the axis to the competitors and to plans at $25K and up, so every rival line is visible.
+  // Only a subscription plan at the two smallest volumes may run off the top, which is the point
+  // the chart makes (the hint under it says so).
+  opts.scales.y.max = curveYMax(curveData(s, a, rivals).datasets);
   opts.scales.x.grid.display = false;
   opts.scales.x.title = { display: true, text: "Merchant monthly sales", color: css("--text-muted"), font: { family: "Jost", size: 12 } };
   opts.scales.y.title = { display: true, text: "Merchant's effective rate", color: css("--text-muted"), font: { family: "Jost", size: 12 } };
@@ -269,23 +284,32 @@ function renderKpis(results, rivals, s) {
   const saveMonthly = (stripe.price - best.price) * best.txns;
 
   $("kPlan").textContent = best.plan.name;
-  $("kPlanSub").textContent = undercuts ? `${fmt.pct(best.effectiveRate)} effective rate` : `closest to ${cheapest.name}, not cheaper`;
+  $("kPlanSub").textContent = undercuts ? `${fmt.pct(best.effectiveRate)} effective rate, beats every rival` : `${fmt.pct(best.effectiveRate)}, does not beat ${cheapest.name}`;
   tweenNumber($("kProfit"), best.monthlyProfit, fmt.usd0);
   $("kProfit").className = best.monthlyProfit >= 0 ? "pos" : "neg";
   $("kProfitSub").textContent = `on ${Math.round(best.txns).toLocaleString("en-US")} sales`;
   tweenNumber($("kMargin"), best.margin, (v) => fmt.usd(v));
   $("kMargin").className = best.margin >= 0 ? "pos" : "neg";
   $("kMarginSub").textContent = `${fmt.pct(best.marginPct)} of the sale`;
-  tweenNumber($("kSave"), saveMonthly, fmt.usd0);
+  // Show a positive amount with the right label instead of a confusing negative saving
+  $("kSaveLabel").textContent = saveMonthly >= 0 ? "Merchant saves vs Stripe" : "Merchant pays more than Stripe";
+  tweenNumber($("kSave"), Math.abs(saveMonthly), fmt.usd0);
   $("kSave").className = saveMonthly >= 0 ? "pos" : "neg";
 
   const merchant = startup.merchants.find((m) => m.id === $("merchant").value).name;
-  // Three decimals in the "no plan wins" case: the gap can be a fraction of a cent,
-  // and rounding both sides to $0.27 would make the sentence look self-contradictory.
-  const floor = results[0].ic + results[0].network + results[0].cost;
+  // Card costs (interchange + network) are kept separate from FairSwipe's own processing cost,
+  // so the sentence never blames the card networks for a gap FairSwipe's cost creates.
+  // Three decimals: on small sales the gaps are fractions of a cent.
+  const cardCosts = results[0].ic + results[0].network;
+  const floor = cardCosts + results[0].cost;
+  // Two different reasons a plan can fail to win: FairSwipe's costs are above the rival's price
+  // (no plan could win profitably), or the current plan menu is simply not priced to win.
+  const why = floor >= cheapest.price
+    ? `no FairSwipe plan can undercut <strong>${cheapest.name}</strong> (${fmt.usd(cheapest.price, 3)} per sale) without losing money. Card costs are ${fmt.usd(cardCosts, 3)}, and with FairSwipe's ${fmt.usd(results[0].cost)} processing cost the floor is ${fmt.usd(floor, 3)}.`
+    : `none of FairSwipe's current plans undercut <strong>${cheapest.name}</strong> (${fmt.usd(cheapest.price, 3)} per sale), although FairSwipe's cost floor is only ${fmt.usd(floor, 3)}. A plan priced in between would win and still make money.`;
   $("finder").innerHTML = undercuts
-    ? `For the ${esc(merchant)} profile, <strong>${esc(best.plan.name)}</strong> earns FairSwipe the most (${fmt.usd0(best.monthlyProfit)} a month) while charging ${fmt.usd(cheapest.price - best.price)} less per sale than ${cheapest.name}, the cheapest competitor.`
-    : `For the ${esc(merchant)} profile, no FairSwipe plan undercuts <strong>${cheapest.name}</strong> (${fmt.usd(cheapest.price, 3)} per sale) without losing money: card costs alone are ${fmt.usd(floor, 3)}. The closest is <strong>${esc(best.plan.name)}</strong> at ${fmt.usd(best.price, 3)}, ${fmt.usd(best.price - cheapest.price, 3)} more per sale.`;
+    ? `For the ${esc(merchant)} profile, the merchant's best FairSwipe option is <strong>${esc(best.plan.name)}</strong> at ${fmt.usd(best.price)} per sale, ${fmt.usd(cheapest.price - best.price)} less than ${cheapest.name}, the cheapest competitor. FairSwipe still earns ${fmt.usd0(best.monthlyProfit)} a month.`
+    : `For the ${esc(merchant)} profile, ${why} The merchant's cheapest FairSwipe option is <strong>${esc(best.plan.name)}</strong> at ${fmt.usd(best.price, 3)}.`;
 }
 
 // ---------- Main update loop ----------
@@ -308,6 +332,7 @@ function update() {
       const cd = curveData(s, a, rivals);
       curveChart.data.labels = cd.labels;
       curveChart.data.datasets = cd.datasets;
+      curveChart.options.scales.y.max = curveYMax(cd.datasets);
       curveChart.update();
     }
   }
