@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FairSwipe | Analytics</title>
+<meta name="description" content="Test FairSwipe plans against real interchange costs and Stripe, Square, PayPal and Adyen pricing for different merchants.">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<!-- Runs before first paint: marks JS as available (enables entrance animations) and restores
+     this tab's theme choice so dark-mode visitors never see a flash of the light theme. -->
+<script>document.documentElement.classList.add("js");try{if(sessionStorage.getItem("fairswipe.theme")==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
+<!-- Fonts: only the weights used are requested; display=swap keeps text visible while they load -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=IBM+Plex+Mono:wght@400;500&family=Jost:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="band">
+  <nav class="wrap nav" aria-label="Main">
+    <a class="brand" href="index.html"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="7" width="26" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3 13h26" stroke="currentColor" stroke-width="1.6"/><path d="M16 17.4l2 2-2 2-2-2z" fill="currentColor"/></svg>FairSwipe</a>
+    <ul class="nav-links" id="navLinks">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="manageplans.html">Manage plans</a></li>
+        <li><a href="analytics.html" aria-current="page">Analytics</a></li>
+        <li><a href="aboutus.html">About</a></li>
+    </ul>
+    <div class="nav-tools">
+      <button class="pill-btn" id="themeToggle" type="button" aria-pressed="false">Dark</button>
+      <button class="pill-btn menu-btn" id="menuToggle" type="button" aria-expanded="false" aria-controls="navLinks">Menu</button>
+    </div>
+  </nav>
+  <div class="wrap page-head">
+    <div class="label">Plan economics</div>
+    <h1>Does the plan pay?</h1>
+    <div class="ornament"><span></span></div>
+    <p>Pick a merchant, adjust the sale and cost assumptions, and see what each plan charges, what FairSwipe keeps, and whether it beats the competition.</p>
+  </div>
+</header>
+
+<main id="main">
+  <section class="block" style="padding-top:40px">
+    <div class="wrap analytics-grid">
+
+      <!-- Controls (decisions 4B and 2C): merchant inputs and FairSwipe's cost structure -->
+      <aside class="panel controls" aria-label="Scenario controls">
+        <fieldset>
+          <legend>Merchant</legend>
+          <div class="field">
+            <label class="label" for="merchant">Profile</label>
+            <select id="merchant"></select>
+          </div>
+          <div class="field">
+            <div class="row-label"><label class="label" for="ticket">Average sale</label><output id="ticketOut" for="ticket"></output></div>
+            <input id="ticket" type="range" min="2" max="1000" step="1">
+          </div>
+          <div class="field">
+            <div class="row-label"><label class="label" for="debit">Debit share</label><output id="debitOut" for="debit"></output></div>
+            <input id="debit" type="range" min="0" max="100" step="5">
+          </div>
+          <div class="field">
+            <div class="row-label"><label class="label" for="volume">Monthly sales</label><output id="volumeOut" for="volume"></output></div>
+            <input id="volume" type="range" min="0" step="1">
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Cost structure</legend>
+          <div class="field">
+            <div class="row-label"><label class="label" for="procCost">Processing cost per sale</label><output id="procOut" for="procCost"></output></div>
+            <input id="procCost" type="range" min="0" max="0.2" step="0.01">
+          </div>
+          <div class="field">
+            <div class="row-label"><label class="label" for="netFee">Network fee</label><output id="netOut" for="netFee"></output></div>
+            <input id="netFee" type="range" min="0.05" max="0.3" step="0.01">
+          </div>
+          <p class="hint" style="margin:0">Both are assumptions. Interchange and competitor rates are fixed to their published sources.</p>
+        </fieldset>
+        <button class="btn btn-outline" id="resetScenario" type="button">Reset scenario</button>
+      </aside>
+
+      <div>
+        <div class="kpis" aria-live="polite">
+          <div class="kpi"><div class="label">Recommended plan</div><b id="kPlan">&nbsp;</b><small id="kPlanSub"></small></div>
+          <div class="kpi"><div class="label">FairSwipe monthly profit</div><b id="kProfit" class="pos">&nbsp;</b><small id="kProfitSub"></small></div>
+          <div class="kpi"><div class="label">Margin on each sale</div><b id="kMargin" class="pos">&nbsp;</b><small id="kMarginSub"></small></div>
+          <div class="kpi"><div class="label">Merchant saves vs Stripe</div><b id="kSave">&nbsp;</b><small>per month</small></div>
+        </div>
+        <p class="finder" id="finder" aria-live="polite"></p>
+
+        <!-- Chart 1: stacked fee breakdown with competitor bars (decision 3B) -->
+        <div class="panel" style="margin-top:18px">
+          <div class="panel-head">
+            <div><div class="label">Price per sale</div><h2>Who gets paid on each sale</h2></div>
+            <div class="legend-inline" id="breakdownLegend"></div>
+          </div>
+          <div class="chart-box tall"><canvas id="breakdownChart" role="img" aria-label="Stacked bars of interchange, network fee, processing cost and FairSwipe margin for each plan, next to competitor prices"></canvas></div>
+          <details class="table-view">
+            <summary>Show as table</summary>
+            <div class="table-wrap"><table id="breakdownTable"></table></div>
+          </details>
+        </div>
+
+        <!-- Chart 2: monthly profit as volume grows (decision 3C) -->
+        <div class="panel">
+          <div class="panel-head">
+            <div><div class="label">Scale</div><h2>When each plan becomes the better deal</h2></div>
+            <div class="legend-inline" id="curveLegend"></div>
+          </div>
+          <div class="chart-box"><canvas id="curveChart" role="img" aria-label="Line chart of the merchant effective rate for each FairSwipe plan across monthly sales volumes, with Stripe and the cheapest other competitor as dashed reference lines"></canvas></div>
+          <p class="hint" style="margin:12px 0 0">A monthly fee is spread across every sale, so subscription plans look expensive for small merchants and become the cheapest option as sales grow. Where a solid line drops below a dashed one, that plan beats the competitor. Hover to see what FairSwipe earns at each size.</p>
+          <details class="table-view">
+            <summary>Show as table</summary>
+            <div class="table-wrap"><table id="curveTable"></table></div>
+          </details>
+        </div>
+
+        <div class="panel">
+          <div class="label">Method and limits</div>
+          <h2 style="font-size:28px;margin:6px 0 12px">How these numbers are built</h2>
+          <ul class="small" style="padding-left:18px;margin:0">
+            <li>Interchange uses Visa's published consumer credit rates (card present 1.43% + $0.10, card not present 1.89% + $0.10) and the regulated debit rate (0.05% + $0.21, plus $0.01 fraud adjustment). <a href="https://usa.visa.com/dam/VCOM/download/merchants/visa-usa-interchange-reimbursement-fees.pdf" target="_blank" rel="noopener">Visa, effective April 18, 2026</a>.</li>
+            <li>These are the lowest consumer credit tiers. Rewards and premium cards cost more, so real interchange is usually higher.</li>
+            <li>Regulated debit applies to large banks only. Debit cards from smaller banks carry higher interchange.</li>
+            <li>Competitor prices are each provider's standard published US rate. Negotiated pricing, Adyen's unpublished minimum invoice and add-on fees are excluded.</li>
+            <li>FairSwipe plans, processing cost and network fee are scenario inputs. Edit plans on <a href="manageplans.html">Manage plans</a>.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="band">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a class="brand" href="index.html"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="7" width="26" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3 13h26" stroke="currentColor" stroke-width="1.6"/><path d="M16 17.4l2 2-2 2-2-2z" fill="currentColor"/></svg>FairSwipe</a>
+        <div class="ornament" style="justify-content:flex-start;margin:16px 0"><span></span></div>
+        <p style="opacity:.8;max-width:340px">Card acceptance priced line by line, tested against what the big processors charge.</p>
+      </div>
+      <div>
+        <h3>Explore</h3>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="manageplans.html">Manage plans</a></li>
+          <li><a href="analytics.html">Analytics</a></li>
+          <li><a href="aboutus.html">About</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Sources</h3>
+        <ul>
+          <li><a href="https://usa.visa.com/dam/VCOM/download/merchants/visa-usa-interchange-reimbursement-fees.pdf" target="_blank" rel="noopener">Visa USA interchange fees</a></li>
+          <li><a href="https://stripe.com/pricing" target="_blank" rel="noopener">Stripe pricing</a></li>
+          <li><a href="https://squareup.com/us/en/pricing" target="_blank" rel="noopener">Square pricing</a></li>
+          <li><a href="https://www.paypal.com/us/business/paypal-business-fees" target="_blank" rel="noopener">PayPal merchant fees</a></li>
+          <li><a href="https://www.adyen.com/pricing" target="_blank" rel="noopener">Adyen pricing</a></li>
+        </ul>
+      </div>
+    </div>
+    <p class="fine">FairSwipe is a fictional company. Its plans and cost assumptions are scenario inputs. Competitor and interchange figures come from the published sources above, captured September 28, 2026. &copy; <span id="year">2026</span> Felipe Toro.</p>
+  </div>
+</footer>
+<!-- Chart.js loads only on this page, deferred, so it never blocks the first paint -->
+<script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script type="module" src="js/analytics.js"></script>
+</body>
+</html>

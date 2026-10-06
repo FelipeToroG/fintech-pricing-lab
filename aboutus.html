@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FairSwipe | About</title>
+<meta name="description" content="About Felipe Toro, the developer of FairSwipe, and how the site was built.">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<!-- Runs before first paint: marks JS as available (enables entrance animations) and restores
+     this tab's theme choice so dark-mode visitors never see a flash of the light theme. -->
+<script>document.documentElement.classList.add("js");try{if(sessionStorage.getItem("fairswipe.theme")==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
+<!-- Fonts: only the weights used are requested; display=swap keeps text visible while they load -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=IBM+Plex+Mono:wght@400;500&family=Jost:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="band">
+  <nav class="wrap nav" aria-label="Main">
+    <a class="brand" href="index.html"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="7" width="26" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3 13h26" stroke="currentColor" stroke-width="1.6"/><path d="M16 17.4l2 2-2 2-2-2z" fill="currentColor"/></svg>FairSwipe</a>
+    <ul class="nav-links" id="navLinks">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="manageplans.html">Manage plans</a></li>
+        <li><a href="analytics.html">Analytics</a></li>
+        <li><a href="aboutus.html" aria-current="page">About</a></li>
+    </ul>
+    <div class="nav-tools">
+      <button class="pill-btn" id="themeToggle" type="button" aria-pressed="false">Dark</button>
+      <button class="pill-btn menu-btn" id="menuToggle" type="button" aria-expanded="false" aria-controls="navLinks">Menu</button>
+    </div>
+  </nav>
+  <div class="wrap page-head">
+    <div class="label">About the developer</div>
+    <h1>Felipe Toro</h1>
+    <div class="ornament"><span></span></div>
+    <p>Pricing strategy &nbsp;&bull;&nbsp; Business intelligence &nbsp;&bull;&nbsp; Applied machine learning</p>
+  </div>
+</header>
+
+<main id="main">
+  <section class="block reveal">
+    <div class="wrap about-grid">
+      <div>
+        <div class="monogram" aria-hidden="true">FT</div>
+        <h2 style="font-size:34px">Pricing work, built like software</h2>
+        <ul class="facts">
+          <li><span class="label">Based in</span><br>Tampa, Florida</li>
+          <li><span class="label">Education</span><br>M.S. Artificial Intelligence and Business Analytics, University of South Florida (expected May 2027)<br>B.S. Industrial Engineering, University of South Florida</li>
+          <li><span class="label">Find me</span><br><a href="https://github.com/FelipeToroG" target="_blank" rel="noopener">github.com/FelipeToroG</a></li>
+        </ul>
+      </div>
+      <div>
+        <p style="font-size:18px">I lead pricing and business intelligence at an electronics manufacturer that supports federal defense programs. I built the company's first BI function from scratch and own cost and pricing analysis on proposals across a pipeline of more than $300 million.</p>
+        <p>Before that I co-founded iGEN, a CAD/CAM services firm, and scaled it to more than 25 remote employees. The common thread is turning messy cost data into prices a business can defend.</p>
+        <p>Outside of work I build production-grade machine learning projects. My focus is systems that hold up under review: tested, observable, and where every model or language-model output can be traced back to cited evidence.</p>
+        <ol class="timeline" style="margin-top:28px">
+          <li><div class="label">Now</div>Business Intelligence Engineer and pricing lead, defense electronics manufacturing</li>
+          <li><div class="label">Also</div>Leads the proposal development team on federal bids</li>
+          <li><div class="label">Founder</div>Co-founder, iGEN (CAD/CAM services), grew to 25+ remote employees</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="block reveal" style="padding-top:0" aria-labelledby="projTitle">
+    <div class="wrap">
+      <div class="section-head"><div class="label">Portfolio</div><h2 id="projTitle">Selected projects</h2><div class="ornament"><span></span></div></div>
+      <div class="plans">
+        <a class="card repo" href="https://github.com/FelipeToroG/ml-fraud-detection-pipeline" target="_blank" rel="noopener">
+          <div class="label">Machine learning</div>
+          <h3>Fraud detection pipeline</h3>
+          <p class="muted small">Card-fraud classifier tuned to a dollar cost matrix instead of accuracy, choosing the decision threshold that minimizes expected loss.</p>
+          <div class="stack"><span class="badge">Python</span><span class="badge">Optuna</span><span class="badge">MLflow</span><span class="badge">FastAPI</span><span class="badge">Docker</span></div>
+        </a>
+        <a class="card repo" href="https://github.com/FelipeToroG/aml-transaction-monitoring" target="_blank" rel="noopener">
+          <div class="label">Machine learning</div>
+          <h3>AML transaction monitoring</h3>
+          <p class="muted small">Anti-money-laundering alert ranking on a five-million-row transaction dataset, evaluated on cost-weighted precision at the top of the review queue.</p>
+          <div class="stack"><span class="badge">Python</span><span class="badge">scikit-learn</span><span class="badge">pytest</span></div>
+        </a>
+        <a class="card repo" href="https://github.com/FelipeToroG/fintech-pricing-lab" target="_blank" rel="noopener">
+          <div class="label">This site</div>
+          <h3>FairSwipe</h3>
+          <p class="muted small">Static pricing lab for a fictional payments startup. Every competitor and interchange figure is cited to its source.</p>
+          <div class="stack"><span class="badge">HTML</span><span class="badge">CSS</span><span class="badge">JavaScript</span><span class="badge">Chart.js</span></div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="block reveal" style="padding-top:0" aria-labelledby="buildTitle">
+    <div class="wrap split" style="align-items:start">
+      <div>
+        <div class="label">How this site was built</div>
+        <h2 id="buildTitle">Data first, then design</h2>
+        <p>I started with the data, not the pages. Published fees from Stripe, Square, PayPal and Adyen, plus Visa's interchange schedule, went into one normalized JSON file with a source link and capture date on every number. FairSwipe's own plans and cost assumptions live in a separate file, so invented scenario values can never be confused with cited facts.</p>
+        <p>One pricing module turns that data into every number on the site: the receipt on the home page, the plan table, the KPI tiles and both charts. Changing a plan or a slider recalculates everything from the same functions.</p>
+        <p>The hardest part was honesty in the model. On small in-person sales, card costs alone come close to what Stripe charges, so no FairSwipe plan undercuts it there. The analytics page says so instead of hiding it.</p>
+      </div>
+      <div class="card">
+        <div class="label">Technologies</div>
+        <ul class="facts" style="margin-top:8px">
+          <li><b>HTML5</b>: semantic pages, native dialog elements for the add, view, edit and delete forms</li>
+          <li><b>CSS</b>: custom properties as design tokens, light and dark themes, grid layouts, no framework</li>
+          <li><b>JavaScript</b>: ES modules, a pure-function pricing model, session storage for demo edits</li>
+          <li><b>Chart.js</b>: stacked bar and line charts, loaded only on the analytics page</li>
+          <li><b>JSON</b>: cited fee data and scenario inputs, documented in SCHEMA.md</li>
+          <li><b>GitHub Pages</b>: static hosting straight from the repository</li>
+        </ul>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px">
+          <a class="btn btn-solid" href="https://github.com/FelipeToroG/fintech-pricing-lab" target="_blank" rel="noopener">View the code</a>
+          <a class="btn btn-outline" href="https://github.com/FelipeToroG" target="_blank" rel="noopener">GitHub profile</a>
+        </div>
+        <p class="hint" style="margin:16px 0 0">Built for ISM 6225 Application Development for Analytics, University of South Florida, Fall 2026.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="band">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a class="brand" href="index.html"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="7" width="26" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3 13h26" stroke="currentColor" stroke-width="1.6"/><path d="M16 17.4l2 2-2 2-2-2z" fill="currentColor"/></svg>FairSwipe</a>
+        <div class="ornament" style="justify-content:flex-start;margin:16px 0"><span></span></div>
+        <p style="opacity:.8;max-width:340px">Card acceptance priced line by line, tested against what the big processors charge.</p>
+      </div>
+      <div>
+        <h3>Explore</h3>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="manageplans.html">Manage plans</a></li>
+          <li><a href="analytics.html">Analytics</a></li>
+          <li><a href="aboutus.html">About</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Sources</h3>
+        <ul>
+          <li><a href="https://usa.visa.com/dam/VCOM/download/merchants/visa-usa-interchange-reimbursement-fees.pdf" target="_blank" rel="noopener">Visa USA interchange fees</a></li>
+          <li><a href="https://stripe.com/pricing" target="_blank" rel="noopener">Stripe pricing</a></li>
+          <li><a href="https://squareup.com/us/en/pricing" target="_blank" rel="noopener">Square pricing</a></li>
+          <li><a href="https://www.paypal.com/us/business/paypal-business-fees" target="_blank" rel="noopener">PayPal merchant fees</a></li>
+          <li><a href="https://www.adyen.com/pricing" target="_blank" rel="noopener">Adyen pricing</a></li>
+        </ul>
+      </div>
+    </div>
+    <p class="fine">FairSwipe is a fictional company. Its plans and cost assumptions are scenario inputs. Competitor and interchange figures come from the published sources above, captured September 28, 2026. &copy; <span id="year">2026</span> Felipe Toro.</p>
+  </div>
+</footer>
+<script type="module" src="js/about.js"></script>
+</body>
+</html>

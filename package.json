@@ -1,0 +1,11 @@
+{
+  "name": "fintech-pricing-lab",
+  "private": true,
+  "description": "Static pricing lab for a fictional payments startup. No dependencies; the site runs as plain HTML, CSS and JavaScript.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/model.test.mjs",
+    "build:pages": "python3 tools/build_pages.py",
+    "serve": "python3 -m http.server 8000"
+  }
+}

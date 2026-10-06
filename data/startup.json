@@ -1,0 +1,83 @@
+{
+  "schema_version": "1.0.0",
+  "company": "FairSwipe",
+  "description": "Scenario inputs for the fictional startup FairSwipe. These are pricing decisions and assumptions, not published facts. Every value here is editable on the site.",
+  "assumptions": {
+    "processing_cost_usd": 0.04,
+    "network_fee_pct": 0.13,
+    "debit_fraud_adjustment_usd": 0.01,
+    "notes": {
+      "processing_cost_usd": "FairSwipe's own cost to authorize, settle and support one transaction. Scenario assumption.",
+      "network_fee_pct": "Card-brand assessment fee charged by Visa or Mastercard. Not published as one citable figure, so it is an adjustable assumption.",
+      "debit_fraud_adjustment_usd": "Added to the regulated debit interchange rate when the issuer qualifies for the fraud-prevention adjustment (Visa interchange schedule)."
+    }
+  },
+  "plans": [
+    {
+      "id": "starter",
+      "name": "Starter",
+      "type": "flat",
+      "rate_pct": 2.75,
+      "fixed_usd": 0.15,
+      "monthly_fee_usd": 0,
+      "target": "New sellers, in person or online",
+      "featured": false
+    },
+    {
+      "id": "micro",
+      "name": "Micro-ticket",
+      "type": "flat",
+      "rate_pct": 3.5,
+      "fixed_usd": 0.05,
+      "monthly_fee_usd": 0,
+      "target": "Coffee shops and sales under $10",
+      "featured": false
+    },
+    {
+      "id": "growth",
+      "name": "Growth",
+      "type": "ic_plus",
+      "rate_pct": 0.5,
+      "fixed_usd": 0.10,
+      "monthly_fee_usd": 49,
+      "target": "$25K to $250K in monthly sales",
+      "featured": true
+    },
+    {
+      "id": "scale",
+      "name": "Scale",
+      "type": "ic_plus",
+      "rate_pct": 0.2,
+      "fixed_usd": 0.05,
+      "monthly_fee_usd": 299,
+      "target": "$250K or more in monthly sales",
+      "featured": false
+    }
+  ],
+  "merchants": [
+    {
+      "id": "coffee",
+      "name": "Coffee shop",
+      "channel": "in_person",
+      "avg_ticket_usd": 8,
+      "monthly_volume_usd": 20000,
+      "debit_share_pct": 60
+    },
+    {
+      "id": "online",
+      "name": "Online store",
+      "channel": "online",
+      "avg_ticket_usd": 80,
+      "monthly_volume_usd": 150000,
+      "debit_share_pct": 40
+    },
+    {
+      "id": "b2b",
+      "name": "B2B software",
+      "channel": "online",
+      "avg_ticket_usd": 600,
+      "monthly_volume_usd": 500000,
+      "debit_share_pct": 10
+    }
+  ]
+}

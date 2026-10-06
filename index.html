@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FairSwipe | Card acceptance, itemized</title>
+<meta name="description" content="FairSwipe prices card acceptance line by line and tests every plan against real interchange costs and published competitor rates.">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<!-- Runs before first paint: marks JS as available (enables entrance animations) and restores
+     this tab's theme choice so dark-mode visitors never see a flash of the light theme. -->
+<script>document.documentElement.classList.add("js");try{if(sessionStorage.getItem("fairswipe.theme")==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
+<!-- Fonts: only the weights used are requested; display=swap keeps text visible while they load -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=IBM+Plex+Mono:wght@400;500&family=Jost:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="band">
+  <nav class="wrap nav" aria-label="Main">
+    <a class="brand" href="index.html"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="7" width="26" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3 13h26" stroke="currentColor" stroke-width="1.6"/><path d="M16 17.4l2 2-2 2-2-2z" fill="currentColor"/></svg>FairSwipe</a>
+    <ul class="nav-links" id="navLinks">
+        <li><a href="index.html" aria-current="page">Home</a></li>
+        <li><a href="manageplans.html">Manage plans</a></li>
+        <li><a href="analytics.html">Analytics</a></li>
+        <li><a href="aboutus.html">About</a></li>
+    </ul>
+    <div class="nav-tools">
+      <button class="pill-btn" id="themeToggle" type="button" aria-pressed="false">Dark</button>
+      <button class="pill-btn menu-btn" id="menuToggle" type="button" aria-expanded="false" aria-controls="navLinks">Menu</button>
+    </div>
+  </nav>
+  <div class="wrap hero">
+    <div class="eyebrow">Card acceptance &nbsp;&bull;&nbsp; Itemized &nbsp;&bull;&nbsp; Fair</div>
+    <h1>Every swipe, <em>itemized.</em></h1>
+    <div class="ornament"><span></span></div>
+    <p>FairSwipe shows merchants where each cent of a card fee goes, then prices plans that beat the big processors without losing money on the sale.</p>
+    <div class="ctas">
+      <a class="btn btn-light" href="#plans">See the plans</a>
+      <a class="btn btn-ghost-light" href="analytics.html">Run the numbers</a>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <!-- Stat strip: every figure is computed from data/providers.json by js/home.js -->
+  <section class="block reveal" aria-label="Key figures">
+    <div class="wrap stats" id="stats">
+      <div class="stat"><b data-stat="passthrough">&nbsp;</b><span class="muted">of a typical Stripe online fee goes to the card's bank and network, not to Stripe</span></div>
+      <div class="stat"><b data-stat="saving">&nbsp;</b><span class="muted">saved per $80 online sale on FairSwipe Growth versus Stripe's standard rate</span></div>
+      <div class="stat"><b data-stat="rivals">4</b><span class="muted">processors benchmarked from their published US pricing pages</span></div>
+    </div>
+  </section>
+
+  <!-- Receipt explainer (decision 1B): one sale broken into who gets paid -->
+  <section class="block reveal" style="padding-top:0" aria-labelledby="receiptTitle">
+    <div class="wrap split">
+      <div>
+        <div class="label">Where your fee goes</div>
+        <h2 id="receiptTitle">One $80 sale, line by line</h2>
+        <p>Most of a card fee never reaches the processor. The largest share is <strong>interchange</strong>, set by Visa and Mastercard and paid to the customer's bank. A smaller network fee goes to the card brand. What is left is the processor's margin.</p>
+        <p class="muted">FairSwipe prints this breakdown for every plan, so merchants see exactly what they are paying for.</p>
+        <a class="btn btn-solid" href="analytics.html" style="margin-top:8px">Test your own numbers</a>
+      </div>
+      <div class="receipt" id="receipt" aria-live="polite">
+        <div class="r-head">FairSwipe</div>
+        <div class="r-sub">ONLINE SALE &middot; VISA CREDIT &middot; GROWTH PLAN</div>
+        <div id="receiptRows"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Plan cards: rendered from the session plan list, so edits on Manage plans show up here -->
+  <section class="block reveal" id="plans" style="padding-top:0" aria-labelledby="plansTitle">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="label">Plans</div>
+        <h2 id="plansTitle">Priced in the open</h2>
+        <div class="ornament"><span></span></div>
+        <p class="muted">Flat plans charge one simple rate. Interchange-plus plans (IC +) pass card costs through at cost and add a fixed FairSwipe markup.</p>
+      </div>
+      <div class="plans" id="planCards"></div>
+      <p class="hint" id="editedNote" hidden style="text-align:center;margin-top:16px">Showing plans you edited in this tab. <a href="manageplans.html">Manage plans</a></p>
+    </div>
+  </section>
+
+  <section class="block reveal" style="padding-top:0" aria-labelledby="howTitle">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="label">How FairSwipe prices</div>
+        <h2 id="howTitle">Three rules, no fine print</h2>
+        <div class="ornament"><span></span></div>
+      </div>
+      <div class="steps">
+        <div class="card step"><h3>Pass costs through</h3><p class="muted">Interchange and network fees are charged at cost on IC + plans and shown on every statement.</p></div>
+        <div class="card step"><h3>Publish the markup</h3><p class="muted">FairSwipe's share is one visible line. No hidden tiers, no "qualified" and "non-qualified" rates.</p></div>
+        <div class="card step"><h3>Beat the benchmark</h3><p class="muted">Every plan is tested against Stripe, Square, PayPal and Adyen before it ships. See the <a href="analytics.html">analytics</a>.</p></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="band">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a class="brand" href="index.html"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="7" width="26" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3 13h26" stroke="currentColor" stroke-width="1.6"/><path d="M16 17.4l2 2-2 2-2-2z" fill="currentColor"/></svg>FairSwipe</a>
+        <div class="ornament" style="justify-content:flex-start;margin:16px 0"><span></span></div>
+        <p style="opacity:.8;max-width:340px">Card acceptance priced line by line, tested against what the big processors charge.</p>
+      </div>
+      <div>
+        <h3>Explore</h3>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="manageplans.html">Manage plans</a></li>
+          <li><a href="analytics.html">Analytics</a></li>
+          <li><a href="aboutus.html">About</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Sources</h3>
+        <ul>
+          <li><a href="https://usa.visa.com/dam/VCOM/download/merchants/visa-usa-interchange-reimbursement-fees.pdf" target="_blank" rel="noopener">Visa USA interchange fees</a></li>
+          <li><a href="https://stripe.com/pricing" target="_blank" rel="noopener">Stripe pricing</a></li>
+          <li><a href="https://squareup.com/us/en/pricing" target="_blank" rel="noopener">Square pricing</a></li>
+          <li><a href="https://www.paypal.com/us/business/paypal-business-fees" target="_blank" rel="noopener">PayPal merchant fees</a></li>
+          <li><a href="https://www.adyen.com/pricing" target="_blank" rel="noopener">Adyen pricing</a></li>
+        </ul>
+      </div>
+    </div>
+    <p class="fine">FairSwipe is a fictional company. Its plans and cost assumptions are scenario inputs. Competitor and interchange figures come from the published sources above, captured September 28, 2026. &copy; <span id="year">2026</span> Felipe Toro.</p>
+  </div>
+</footer>
+<script type="module" src="js/home.js"></script>
+</body>
+</html>
